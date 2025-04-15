@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Expenses by Date</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <nav class="nav-menu">
+        <a href="index.html">Home</a>
+        <a href="date-search.html" class="active">Search by Date</a>
+        <a href="amount-search.html">Search by Amount</a>
+    </nav>
+
+    <h1>Search Expenses by Date Range</h1>
+
+    <div class="search-container">
+        <div class="form-container">
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <button onclick="searchByDate()">Search</button>
+        </div>
+
+        <div class="summary-container">
+            <div class="total-amount">
+                Total Amount: Rs <span id="totalAmount">0.00</span>
+            </div>
+        </div>
+
+        <div class="expenses-container">
+            <h2>Search Results</h2>
+            <div id="expensesList"></div>
+        </div>
+    </div>
+</div>
+<script src="js/script.js"></script>
+<script src="js/date-search.js"></script>
+</body>
+</html>
