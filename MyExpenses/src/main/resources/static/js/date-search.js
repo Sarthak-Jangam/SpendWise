@@ -1,4 +1,3 @@
-// Initialize default dates when page loads
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
