@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the edit page
     if (window.location.pathname.includes('edit.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const expenseId = urlParams.get('id');
@@ -9,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'index.html';
         }
     } else {
-        // Main page initialization
         if (document.getElementById('expenseForm')) {
             document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
         }
@@ -18,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Edit page functions
+
 function loadExpenseDetails(id) {
     fetch(`/api/expenses/${id}`)
         .then(response => {
@@ -38,7 +36,7 @@ function loadExpenseDetails(id) {
         });
 }
 
-// Handle edit form submission
+
 if (document.getElementById('editForm')) {
     document.getElementById('editForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -71,7 +69,7 @@ if (document.getElementById('editForm')) {
     });
 }
 
-// Main page functions
+
 function handleExpenseSubmit(e) {
     e.preventDefault();
     const expense = {
@@ -185,7 +183,7 @@ function updateExpensesList(expenses) {
         expensesList.appendChild(expenseElement);
     });
 
-    // Add these functions to your existing script.js
+
 
     function filterByCategory() {
         const category = document.getElementById('categoryFilter').value;
@@ -219,7 +217,6 @@ function updateExpensesList(expenses) {
             });
     }
 
-    // Update the updateExpensesList function to include category information
     function updateExpensesList(expenses) {
         const expensesList = document.getElementById('expensesList');
         expensesList.innerHTML = '';
