@@ -1,5 +1,5 @@
-📊 SpendWise - Expense Tracker
-SpendWise is a web-based application for tracking personal expenses. Built with Spring Boot and MySQL, it allows users to categorize and analyze their expenses through a clean and functional backend API. The frontend is built using HTML, CSS, and JavaScript, providing an intuitive interface for adding and viewing expenses.
+📊 SpendWise
+SpendWise is a web-based application designed to track personal expenses and provide insights into spending habits. Built using Spring Boot, it offers RESTful APIs for managing and analyzing expenses. The application uses Spring Data JPA for ORM and MySQL as the relational database.
 
 ✨ Features
 Add new expenses categorized by type (e.g., Food, Travel, etc.)
@@ -13,8 +13,11 @@ Filter total expenses between two dates
 Filter total expenses within a specific amount range
 
 🛠️ Tech Stack
-Backend: Spring Boot, Spring Data JPA
+Spring Boot
 
-Database: MySQL
+Spring Data JPA
 
-Frontend: HTML, CSS, JavaScript
+MySQL
+
+HTML, CSS, JavaScript
+
