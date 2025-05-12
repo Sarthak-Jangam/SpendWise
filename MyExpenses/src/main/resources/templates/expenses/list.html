@@ -29,7 +29,7 @@
                             <option value="">All Categories</option>
                             <option th:each="cat : ${categories}"
                                     th:value="${cat}"
-                                    th:text="${cat}"
+                                    th:text="${#strings.replace(cat, '_', ' ')}"
                                     th:selected="${cat == selectedCategory}">Category</option>
                         </select>
                     </div>
@@ -92,7 +92,7 @@
                         <div class="row">
                             <div th:each="category : ${categories}" class="col-md-4 mb-2">
                                 <div class="d-flex justify-content-between">
-                                    <span th:text="${category}">Category</span>
+                                    <span th:text="${#strings.replace(category, '_', ' ')}">Category</span>
                                     <strong th:text="${currencyFormatter.format(__${'total_' + category.name().toLowerCase()}__)}">₹0.00</strong>
                                 </div>
                             </div>
@@ -120,7 +120,7 @@
                             <tr th:each="expense : ${expenses}">
                                 <td th:text="${expense.description}"></td>
                                 <td>
-                                    <span class="badge bg-info" th:text="${expense.category}"></span>
+                                    <span class="badge bg-info" th:text="${#strings.replace(expense.category, '_', ' ')}"></span>
                                 </td>
                                 <td th:text="${currencyFormatter.format(expense.amount)}">₹0.00</td>
                                 <td th:text="${#temporals.format(expense.createdAt, 'dd MMM yyyy')}"></td>

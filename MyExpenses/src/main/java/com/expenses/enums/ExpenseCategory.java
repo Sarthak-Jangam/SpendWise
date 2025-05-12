@@ -10,7 +10,7 @@ public enum ExpenseCategory {
     HEALTH,
     EDUCATION,
     DONATION,
-    CHURCH,
+    TEMPLE,
     GAS,
     GIFTS,
     PERSONAL_EXPENSES,
