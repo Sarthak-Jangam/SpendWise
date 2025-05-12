@@ -4,20 +4,18 @@ import com.expenses.entity.Expense;
 import com.expenses.enums.ExpenseCategory;
 import com.expenses.exception.ExpenseNotFoundException;
 import com.expenses.service.ExpenseService;
+import com.expenses.util.CurrencyFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/expenses")
+@Controller
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -27,91 +25,111 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
-    // Create a new expense
-    @PostMapping
-    public ResponseEntity<Expense> createExpense(@RequestBody Expense expense) {
-        Expense createdExpense = expenseService.createExpense(expense);
-        return new ResponseEntity<>(createdExpense, HttpStatus.CREATED);
+    @GetMapping("/")
+    public String redirectToExpenses() {
+        return "redirect:/expenses";
     }
 
-    // Retrieve all expenses
-    @GetMapping
-    public ResponseEntity<List<Expense>> getAllExpenses() {
-        List<Expense> expenses = expenseService.getAllExpenses();
-        return new ResponseEntity<>(expenses, HttpStatus.OK);
-    }
-
-    // Retrieve an expense by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Expense> getExpenseById(@PathVariable Long id) {
-        Optional<Expense> expense = expenseService.getExpenseById(id);
-        return expense.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    // Update an existing expense
-    @PutMapping("/{id}")
-    public ResponseEntity<Expense> updateExpense(@PathVariable Long id, @RequestBody Expense updatedExpense) {
+    @GetMapping("/expenses")
+    public String listExpenses(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount,
+            Model model) {
+        
         try {
-            Expense expense = expenseService.updateExpense(id, updatedExpense);
-            return new ResponseEntity<>(expense, HttpStatus.OK);
-        } catch (ExpenseNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            List<Expense> expenses = expenseService.getAllExpenses();
+            Double totalAmount = expenseService.calculateTotalExpenseAmount();
+
+            // Apply category filter if present
+            ExpenseCategory selectedCategory = null;
+            if (category != null && !category.isEmpty()) {
+                try {
+                    selectedCategory = ExpenseCategory.valueOf(category.toUpperCase());
+                    expenses = expenseService.getExpensesByCategory(selectedCategory);
+                    totalAmount = expenseService.calculateTotalExpenseAmountByCategory(selectedCategory);
+                    model.addAttribute("selectedCategory", selectedCategory);
+                } catch (IllegalArgumentException e) {
+                    // Invalid category - ignore the filter
+                }
+            }
+
+            // Apply date filter if both dates are present
+            if (startDate != null && endDate != null) {
+                if (!endDate.isBefore(startDate)) {
+                    expenses = expenseService.getExpensesBetweenDates(startDate, endDate);
+                    model.addAttribute("startDate", startDate);
+                    model.addAttribute("endDate", endDate);
+                }
+            }
+
+            // Apply amount filter if both values are present
+            if (minAmount != null && maxAmount != null) {
+                if (maxAmount >= minAmount) {
+                    expenses = expenseService.getExpensesBetweenRanges(minAmount, maxAmount);
+                    model.addAttribute("minAmount", minAmount);
+                    model.addAttribute("maxAmount", maxAmount);
+                }
+            }
+
+            model.addAttribute("expenses", expenses);
+            model.addAttribute("totalAmount", totalAmount);
+            model.addAttribute("currencyFormatter", new CurrencyFormatter());
+            model.addAttribute("categories", ExpenseCategory.values());
+
+            // Add category-wise totals when no category filter is applied
+            if (selectedCategory == null) {
+                for (ExpenseCategory cat : ExpenseCategory.values()) {
+                    Double categoryTotal = expenseService.calculateTotalExpenseAmountByCategory(cat);
+                    model.addAttribute("total_" + cat.name().toLowerCase(), categoryTotal);
+                }
+            }
+
+        } catch (Exception e) {
+            model.addAttribute("error", "An error occurred while processing your request. Please try again.");
+            model.addAttribute("expenses", expenseService.getAllExpenses());
+            model.addAttribute("totalAmount", expenseService.calculateTotalExpenseAmount());
+            model.addAttribute("currencyFormatter", new CurrencyFormatter());
+            model.addAttribute("categories", ExpenseCategory.values());
         }
+
+        return "expenses/list";
     }
 
-    // Update an existing expense
-
-
-    // Delete an expense by ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
-        try {
-            expenseService.deleteExpense(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (ExpenseNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/expenses/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("expense", new Expense());
+        model.addAttribute("categories", ExpenseCategory.values());
+        return "expenses/form";
     }
 
-    //Get Expenses By Category
-    @GetMapping("/byCategory")
-    public ResponseEntity<List<Expense>> getExpensesByCategory(@RequestParam ExpenseCategory category) {
-        List<Expense> expenses = expenseService.getExpensesByCategory(category);
-        return new ResponseEntity<>(expenses, HttpStatus.OK);
+    @PostMapping("/expenses/new")
+    public String createExpense(@ModelAttribute Expense expense, RedirectAttributes redirectAttributes) {
+        expenseService.createExpense(expense);
+        redirectAttributes.addFlashAttribute("message", "Expense created successfully!");
+        return "redirect:/expenses";
     }
 
-    //Get Expenses Total amount
-    @GetMapping("/totalExpensesAmount")
-    public ResponseEntity<Map<String, Double>> calculateTotalExpenseAmount() {
-        Double total = expenseService.calculateTotalExpenseAmount();
-        Map<String, Double> map = new HashMap<>();
-        map.put("total", total);
-        return new ResponseEntity<>(map, HttpStatus.OK);
+    @GetMapping("/expenses/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        model.addAttribute("expense", expenseService.getExpenseById(id).orElseThrow());
+        model.addAttribute("categories", ExpenseCategory.values());
+        return "expenses/form";
     }
 
-
-
-    //Get Expenses by Date Ranges
-    @GetMapping("/betweenDates")
-    public List<Expense> getExpensesBetweenDates(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return expenseService.getExpensesBetweenDates(startDate, endDate);
+    @PostMapping("/expenses/edit/{id}")
+    public String updateExpense(@PathVariable Long id, @ModelAttribute Expense expense, RedirectAttributes redirectAttributes) {
+        expenseService.updateExpense(id, expense);
+        redirectAttributes.addFlashAttribute("message", "Expense updated successfully!");
+        return "redirect:/expenses";
     }
 
-    @GetMapping("/totalAmountByCategory")
-    public ResponseEntity<Map<String, Double>> calculateTotalExpenseAmountByCategory(@RequestParam ExpenseCategory category) {
-        Double total = expenseService.calculateTotalExpenseAmountByCategory(category);
-        Map<String, Double> map = new HashMap<>();
-        map.put(category.name().toLowerCase(), total);
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    }
-
-
-    @GetMapping("/expensesBetweenRanges")
-    public ResponseEntity<List<Expense>> getExpensesBetweenRanges(@RequestParam Double start, @RequestParam Double end) {
-        List<Expense> expense = expenseService.getExpensesBetweenRanges(start, end);
-        return new ResponseEntity<>(expense, HttpStatus.OK);
+    @GetMapping("/expenses/delete/{id}")
+    public String deleteExpense(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        expenseService.deleteExpense(id);
+        redirectAttributes.addFlashAttribute("message", "Expense deleted successfully!");
+        return "redirect:/expenses";
     }
 }
