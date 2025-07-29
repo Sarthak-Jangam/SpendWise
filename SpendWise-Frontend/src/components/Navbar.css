@@ -1,0 +1,48 @@
+.navbar {
+  width: 100%;
+  position: sticky;
+  top: -1px;
+  left: 0;
+  z-index: 100;
+  background: #2d3748;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  box-sizing: border-box;
+  margin-top: -1px;
+}
+
+/* Navbar positioning for add/edit pages */
+.navbar.navbar-add-edit {
+  top: -4px;
+  margin-top: -4px;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.navbar-links a.active,
+.navbar-links a:hover {
+  background: #4fd1c5;
+  color: #2d3748;
+}

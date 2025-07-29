@@ -1,0 +1,31 @@
+.category-filter {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 1rem;
+  font-size: 0.95rem;
+}
+
+.category-filter label {
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.category-filter select {
+  padding: 0.35rem 0.7rem;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  background: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  color: #222;
+}
+
+.category-filter select option {
+  color: #222;
+  background: #fff;
+}
+
+.category-filter select:focus {
+  border-color: #4fd1c5;
+  box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
+}
